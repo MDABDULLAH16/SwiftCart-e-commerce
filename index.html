@@ -264,6 +264,37 @@
         </div>
     </section>
 
+    <!-- Trending Products Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <span class="text-brand-600 font-semibold tracking-wide uppercase text-sm">Customer Favorites</span>
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mt-2">Trending Products</h2>
+                </div>
+                <a href="#"
+                    class="hidden md:flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-700 transition-colors">
+                    View All Products <i class="ph-bold ph-arrow-right"></i>
+                </a>
+            </div>
+
+            <!-- Products Grid Container -->
+            <div id="trending-products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Loading State (Skeleton) -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm animate-pulse h-96"></div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm animate-pulse h-96 hidden md:block"></div>
+                <div class="bg-white rounded-2xl p-4 shadow-sm animate-pulse h-96 hidden lg:block"></div>
+            </div>
+
+            <div class="mt-12 text-center md:hidden">
+                <a href="#"
+                    class="inline-flex items-center gap-2 text-brand-600 font-semibold hover:text-brand-700 transition-colors">
+                    View All Products <i class="ph-bold ph-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <script src="script.js"></script>
 </body>
 
