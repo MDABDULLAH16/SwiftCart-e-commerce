@@ -160,26 +160,43 @@
     </nav>
 
     <!-- Hero Section (Placeholder to show scrolling effect) -->
-    <div class="pt-32 pb-12 md:pt-40 md:pb-20 px-4">
-        <div class="max-w-7xl mx-auto text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
-                Elevate Your <span
-                    class="text-brand-600 bg-clip-text text-transparent bg-gradient-to-r from-brand-600 to-indigo-600">Lifestyle</span>
+    <!-- Hero Section -->
+    <div class="relative h-screen min-h-[600px] flex items-center justify-center bg-cover bg-center bg-no-repeat"
+        style="background-image: url('Assets/banner-image.png');">
+        <!-- Overlay -->
+        <div class="absolute inset-0 bg-black/40"></div>
+
+        <!-- Content -->
+        <div class="relative z-10 text-center px-4 max-w-4xl mx-auto">
+            <span
+                class="inline-block py-1 px-3 rounded-full bg-brand-600/20 text-brand-50 border border-brand-400/30 text-sm font-semibold mb-6 backdrop-blur-sm tracking-wide uppercase">New
+                Arrivals 2024</span>
+
+            <h1 class="text-4xl md:text-7xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+                Best Collection <br />
+                <span class="text-brand-400">For You</span>
             </h1>
-            <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10">
-                Discover the latest trends in fashion and technology. Premium quality, swift delivery, and exceptional
-                style.
+
+            <p class="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto drop-shadow-md">
+                Discover the latest trends in fashion and technology with our exclusive selection. Premium quality,
+                swift delivery, and exceptional style.
             </p>
-            <div class="flex justify-center gap-4">
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
                 <button
-                    class="px-8 py-3 bg-brand-600 text-white rounded-full font-semibold shadow-lg shadow-brand-500/30 hover:bg-brand-700 hover:shadow-brand-500/50 transition-all transform hover:-translate-y-1">
+                    class="px-8 py-4 bg-brand-600 text-white rounded-full font-bold text-lg shadow-lg shadow-brand-600/40 hover:bg-brand-700 hover:shadow-brand-600/60 hover:scale-105 transition-all transform">
                     Shop Now
                 </button>
                 <button
-                    class="px-8 py-3 bg-white text-gray-700 border border-gray-200 rounded-full font-semibold hover:bg-gray-50 hover:border-gray-300 transition-all">
-                    Learn More
+                    class="px-8 py-4 bg-white/10 backdrop-blur-md text-white border border-white/30 rounded-full font-bold text-lg hover:bg-white/20 hover:border-white/50 transition-all">
+                    View Lookbook
                 </button>
             </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="ph ph-arrow-down text-white text-3xl opacity-70"></i>
         </div>
     </div>
 
