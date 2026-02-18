@@ -13,7 +13,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // --- State ---
+    let cart = []; // array of {id,title,price,image,qty}
     let itemCount = 0;
+
+    const CART_KEY = 'swiftcart_cart_v1';
+
+    // --- Cart Elements ---
+    const cartModal = document.getElementById('cart-modal');
+    const cartBackdrop = document.getElementById('cart-backdrop');
+    const cartPanel = document.getElementById('cart-panel');
+    const closeCartBtn = document.getElementById('close-cart');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotalEl = document.getElementById('cart-total');
+    const clearCartBtn = document.getElementById('clear-cart');
+    const checkoutBtn = document.getElementById('checkout-btn');
 
     // --- Global: Mobile Menu Toggle ---
     if (mobileMenuBtn && mobileMenu) {
@@ -45,35 +58,148 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Helper: Update Cart UI ---
     function updateCartUI() {
+        // update count badge
+        itemCount = cart.reduce((s, it) => s + it.qty, 0);
         if (cartCount) {
             cartCount.textContent = itemCount;
             cartCount.classList.add('scale-125');
             setTimeout(() => cartCount.classList.remove('scale-125'), 200);
         }
+        renderCartItems();
     }
 
-    // --- Helper: Add to Cart ---
-    window.addToCart = (e) => {
-        if (e) e.stopPropagation();
-        itemCount++;
+    // --- Cart Persistence ---
+    function loadCart() {
+        try {
+            const raw = localStorage.getItem(CART_KEY);
+            cart = raw ? JSON.parse(raw) : [];
+        } catch (err) {
+            cart = [];
+        }
         updateCartUI();
+    }
+
+    function saveCart() {
+        try {
+            localStorage.setItem(CART_KEY, JSON.stringify(cart));
+        } catch (err) {
+            console.error('Failed to save cart', err);
+        }
+    }
+
+    async function fetchProductById(id) {
+        if (!id) return null;
+        const cached = window.currentProducts ? window.currentProducts.find(p => p.id === id) : null;
+        if (cached) return cached;
+        try {
+            const res = await fetch(`https://fakestoreapi.com/products/${id}`);
+            return await res.json();
+        } catch (err) {
+            console.error('Failed to fetch product', err);
+            return null;
+        }
+    }
+
+    // --- Helper: Add to Cart (with productId) ---
+    window.addToCart = async (e, productId) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+
+        // simple animation if button element provided
         if (e && e.currentTarget) {
             const btn = e.currentTarget;
             btn.classList.add('scale-110');
             setTimeout(() => btn.classList.remove('scale-110'), 200);
-        } else {
-            alert('Added to cart!');
         }
+
+        if (!productId) {
+            // fallback: just increment count
+            cart.push({ id: `misc-${Date.now()}`, title: 'Item', price: 0, image: '', qty: 1 });
+            saveCart();
+            updateCartUI();
+            return;
+        }
+
+        const product = await fetchProductById(productId);
+        if (!product) return;
+
+        const existing = cart.find(i => i.id === product.id);
+        if (existing) {
+            existing.qty += 1;
+        } else {
+            cart.push({ id: product.id, title: product.title, price: Number(product.price), image: product.image, qty: 1 });
+        }
+        saveCart();
+        updateCartUI();
     };
 
-    // --- Global: Cart Button Click ---
-    if (cartBtn) {
-        cartBtn.addEventListener('click', () => {
-            itemCount++;
-            updateCartUI();
-            alert('Item added to cart!');
-        });
+    // --- Cart Rendering & Removal ---
+    function renderCartItems() {
+        if (!cartItemsContainer) return;
+        if (!cart || cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p class="text-center text-gray-500">Your cart is empty.</p>';
+            if (cartTotalEl) cartTotalEl.textContent = '$0.00';
+            return;
+        }
+
+        const itemsHtml = cart.map(item => `
+            <div class="flex items-center gap-3">
+                <img src="${item.image}" alt="${item.title}" class="w-16 h-16 object-contain rounded-md border">
+                <div class="flex-1">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-semibold">${item.title}</h4>
+                        <button onclick="window.removeFromCart(${item.id})" class="text-sm text-red-500">Remove</button>
+                    </div>
+                    <div class="flex items-center justify-between mt-1 text-sm text-gray-600">
+                        <span>Qty: ${item.qty}</span>
+                        <span>$${(item.price * item.qty).toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        cartItemsContainer.innerHTML = itemsHtml;
+
+        const total = cart.reduce((s, it) => s + it.price * it.qty, 0);
+        if (cartTotalEl) cartTotalEl.textContent = `$${total.toFixed(2)}`;
     }
+
+    window.removeFromCart = (id) => {
+        const idx = cart.findIndex(i => i.id === id);
+        if (idx === -1) return;
+        cart.splice(idx, 1);
+        saveCart();
+        updateCartUI();
+    };
+
+    // --- Global: Cart Button Click (open cart modal) ---
+    function openCart() {
+        if (!cartModal) return;
+        cartModal.classList.remove('hidden');
+        setTimeout(() => {
+            if (cartBackdrop) cartBackdrop.classList.remove('opacity-0');
+            if (cartPanel) cartPanel.classList.remove('translate-x-full');
+        }, 10);
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeCart() {
+        if (!cartModal) return;
+        if (cartBackdrop) cartBackdrop.classList.add('opacity-0');
+        if (cartPanel) cartPanel.classList.add('translate-x-full');
+        setTimeout(() => {
+            cartModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+
+    if (cartBtn) {
+        cartBtn.addEventListener('click', () => openCart());
+    }
+
+    if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
+    if (cartBackdrop) cartBackdrop.addEventListener('click', closeCart);
+    if (clearCartBtn) clearCartBtn.addEventListener('click', () => { cart = []; saveCart(); updateCartUI(); });
+    if (checkoutBtn) checkoutBtn.addEventListener('click', () => { alert('Checkout flow not implemented.'); });
 
 
     // --- Helper: Render Products Grid ---
@@ -110,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
                          <button onclick="window.openModal(${product.id})" class="p-2 text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors" title="Quick View">
                             <i class="ph-bold ph-eye text-lg"></i>
                         </button>
-                        <button onclick="addToCart(event)" class="p-2 bg-gray-900 text-white rounded-lg hover:bg-brand-600 transition-colors shadow-md">
+                        <button onclick="addToCart(event, ${product.id})" class="p-2 bg-gray-900 text-white rounded-lg hover:bg-brand-600 transition-colors shadow-md">
                             <i class="ph-bold ph-plus text-lg"></i>
                         </button>
                     </div>
@@ -224,7 +350,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <h3 class="text-lg font-bold text-gray-900 mb-2 line-clamp-2">${product.title}</h3>
                              <div class="mt-auto flex items-center justify-between pt-4">
                                 <span class="text-2xl font-bold text-brand-600">$${product.price}</span>
-                                <button onclick="addToCart(event)" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-900 border border-gray-200 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all shadow-sm">
+                                <button onclick="addToCart(event, ${product.id})" class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-900 border border-gray-200 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition-all shadow-sm">
                                     <i class="ph-bold ph-shopping-cart-simple text-lg"></i>
                                 </button>
                             </div>
@@ -256,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('p-description').textContent = product.description;
                     document.getElementById('p-price').textContent = `$${product.price}`;
 
-                    document.getElementById('add-to-cart-btn').onclick = (e) => addToCart(e);
+                    document.getElementById('add-to-cart-btn').onclick = (e) => addToCart(e, product.id);
                 })
                 .catch(err => {
                     console.error(err);
@@ -292,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('modal-price').textContent = `$${product.price}`;
 
             document.getElementById('modal-add-to-cart').onclick = () => {
-                addToCart();
+                addToCart(null, product.id);
                 closeModal();
             };
 
@@ -318,6 +444,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --- Newsletter Form ---
+    // --- Init: load persisted cart ---
+    loadCart();
+
     const newsletterForm = document.getElementById('newsletter-form');
     if (newsletterForm) {
         newsletterForm.addEventListener('submit', (e) => {
