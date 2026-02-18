@@ -128,4 +128,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial Load
     fetchTrendingProducts();
+
+    // --- Newsletter Form ---
+    const newsletterForm = document.getElementById('newsletter-form');
+    if (newsletterForm) {
+        newsletterForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = newsletterForm.querySelector('input').value;
+            alert(`Thanks for subscribing with ${email}!`);
+            newsletterForm.reset();
+        });
+    }
 });
